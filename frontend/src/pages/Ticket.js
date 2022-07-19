@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import Modal from 'react-modal';
 import { FaPlus } from 'react-icons/fa';
 import { useSelector, useDispatch } from 'react-redux';
-import { getTicket, closeTicket } from '../features/tickets/ticketSlice';
+import { getTicket, closeTicket, reset } from '../features/tickets/ticketSlice';
 import { getNotes, createNote, reset as notesReset, } from '../features/notes/noteSlice';
 import { useParams, useNavigate } from 'react-router-dom';
 import BackButton from '../components/BackButton';
@@ -28,17 +28,33 @@ Modal.setAppElement('#root');
 function Ticket() {
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [noteText, setNoteText] = useState('');
-    const { ticket, isLoading, isError, message } = useSelector(
+    const { ticket, isLoading, isSuccess, isError, message } = useSelector(
         (state) => state.tickets
     );
 
-    const { notes, isLoading: notesIsLoading } = useSelector(
+    const { notes, isLoading: notesIsLoading, isSuccess: notesIsSuccess } = useSelector(
         (state) => state.notes
     );
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const { ticketId } = useParams();
+
+    useEffect(() => {
+        return () => {
+            if (isSuccess) {
+                dispatch(reset());
+            }
+        }
+    }, [dispatch, isSuccess]);
+
+    useEffect(() => {
+        return () => {
+            if (notesIsSuccess) {
+                dispatch(notesReset());
+            }
+        }
+    }, [dispatch, notesIsSuccess]);
 
     useEffect(() => {
         if (isError) {
@@ -61,8 +77,13 @@ function Ticket() {
     // Create note submit
     const onNoteSubmit = (e) => {
         e.preventDefault();
-        dispatch(createNote({ noteText, ticketId }));
-        closeModal();
+        if (noteText === '') {
+            toast.error('Please add some text');
+        }
+        else {
+            dispatch(createNote({ noteText, ticketId }));
+            closeModal();
+        }
     }
 
     // Open/close modal
