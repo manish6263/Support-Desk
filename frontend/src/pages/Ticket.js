@@ -12,7 +12,7 @@ import NoteItem from '../components/NoteItem';
 
 const customStyles = {
     content: {
-        width: '450px',
+        width: '410px',
         top: '50%',
         left: '50%',
         right: 'auto',
